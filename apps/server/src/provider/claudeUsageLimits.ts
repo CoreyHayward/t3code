@@ -31,6 +31,15 @@ import {
 const SESSION_MINS = 5 * 60;
 const WEEK_MINS = 7 * 24 * 60;
 
+type ClaudeUsageResponse = {
+  readonly rate_limits_available: SDKControlGetUsageResponse["rate_limits_available"];
+  readonly rate_limits:
+    | (Omit<NonNullable<SDKControlGetUsageResponse["rate_limits"]>, "extra_usage"> & {
+        readonly extra_usage?: unknown;
+      })
+    | null;
+};
+
 /**
  * The account-wide windows, keyed by the SDK's `rateLimitType`. Model-scoped
  * weeklies are additive on top of these: the CLI reports them under
@@ -204,7 +213,7 @@ export function claudeRateLimitEventToUpdate(
  * scoped-bucket names the response carried, for the event mapper to reuse.
  */
 export function claudeUsageResponseToLimits(input: {
-  readonly response: Pick<SDKControlGetUsageResponse, "rate_limits_available" | "rate_limits">;
+  readonly response: ClaudeUsageResponse;
   readonly checkedAt: string;
 }): { readonly limits: ServerProviderUsageLimits; readonly names: ClaudeScopedLimitNames } {
   const { response, checkedAt } = input;

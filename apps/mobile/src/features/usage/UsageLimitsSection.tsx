@@ -103,7 +103,7 @@ function WindowRow(props: {
   );
 }
 
-function AccountInstanceLabel({ value }: { readonly value: string }) {
+export function AccountInstanceLabel({ value }: { readonly value: string }) {
   const [revealed, setRevealed] = useState(false);
   if (!value.includes("@")) {
     return (

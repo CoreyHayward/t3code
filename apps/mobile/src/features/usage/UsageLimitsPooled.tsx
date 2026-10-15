@@ -25,7 +25,7 @@ import { AppText as Text } from "../../components/AppText";
 import { ProviderIcon } from "../../components/ProviderIcon";
 import { SettingsScreen } from "../settings/components/SettingsScreen";
 import { environmentPresentations } from "../../state/presentation";
-import { ResetCredits } from "./UsageLimitsSection";
+import { AccountInstanceLabel, ResetCredits } from "./UsageLimitsSection";
 import { useProviderColors } from "./usageProviders";
 
 const DRIVER_LABEL: Partial<Record<string, string>> = {
@@ -240,7 +240,11 @@ function UsageCreditsCard({
         </View>
       </View>
       {showAccountName ? (
-        <Text className="text-xs font-t3-medium text-foreground">{accountName(account)}</Text>
+        account.email && !account.displayName ? (
+          <AccountInstanceLabel key={account.email} value={account.email} />
+        ) : (
+          <Text className="text-xs font-t3-medium text-foreground">{accountName(account)}</Text>
+        )
       ) : null}
       {summary.remainingPercent !== null ? (
         <View

@@ -57,9 +57,9 @@ const ClaudeUsage = Schema.Struct({
     Schema.NullOr(
       Schema.Struct({
         is_enabled: Schema.Boolean,
-        monthly_limit: Schema.NullOr(Schema.Number),
-        used_credits: Schema.NullOr(Schema.Number),
-        utilization: Schema.NullOr(Schema.Number),
+        monthly_limit: Schema.optional(Schema.NullOr(Schema.Number)),
+        used_credits: Schema.optional(Schema.NullOr(Schema.Number)),
+        utilization: Schema.optional(Schema.NullOr(Schema.Number)),
         currency: Schema.optionalKey(Schema.NullOr(Schema.String)),
         decimal_places: Schema.optional(Schema.Number),
         disabled_reason: Schema.optional(Schema.NullOr(Schema.String)),

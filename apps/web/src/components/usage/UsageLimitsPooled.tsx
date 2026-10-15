@@ -611,7 +611,18 @@ function UsageCreditsCard({
       </div>
       <div className="flex min-w-0 flex-col gap-2">
         {showAccountName ? (
-          <AccountName account={account} className="text-xs font-medium text-foreground" />
+          account.email && !account.displayName ? (
+            <RedactedSensitiveText
+              key={account.email}
+              value={account.email}
+              ariaLabel="Toggle credit account email visibility"
+              revealTooltip="Click to reveal account"
+              hideTooltip="Click to hide account"
+              className="w-fit break-all text-xs"
+            />
+          ) : (
+            <AccountName account={account} className="text-xs font-medium text-foreground" />
+          )
         ) : null}
         {summary.remainingPercent !== null ? (
           <div

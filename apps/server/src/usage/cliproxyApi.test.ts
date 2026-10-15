@@ -273,6 +273,54 @@ describe("CLIProxyAPI built-in management API", () => {
     }),
   );
 
+  it.effect.each([
+    { name: "all omitted", extraUsage: { is_enabled: true }, expected: {} },
+    {
+      name: "monthly limit omitted",
+      extraUsage: { is_enabled: true, used_credits: 1250, utilization: 25 },
+      expected: { usedCredits: 12.5, utilization: 25 },
+    },
+    {
+      name: "spend omitted",
+      extraUsage: { is_enabled: true, monthly_limit: 5000, utilization: 25 },
+      expected: { monthlyLimit: 50, utilization: 25 },
+    },
+    {
+      name: "utilization omitted",
+      extraUsage: { is_enabled: true, monthly_limit: 5000, used_credits: 1250 },
+      expected: { monthlyLimit: 50, usedCredits: 12.5 },
+    },
+    {
+      name: "explicit nulls",
+      extraUsage: { is_enabled: true, monthly_limit: null, used_credits: null, utilization: null },
+      expected: { monthlyLimit: null, usedCredits: null, utilization: null },
+    },
+  ])("keeps Claude quota windows with credit numbers $name", ({ extraUsage, expected }) =>
+    Effect.gen(function* () {
+      const checkedAt = "2026-10-15T12:00:00.000Z";
+      yield* TestClock.setTime(Date.parse(checkedAt));
+      const test = fixture({
+        accounts: [{ ...accounts[0]!, provider: "claude" }],
+        upstream: () => ({
+          status: 200,
+          body: {
+            five_hour: { utilization: 10, resets_at: null },
+            seven_day: { utilization: 50, resets_at: null },
+            extra_usage: extraUsage,
+          },
+        }),
+      });
+      const api = yield* test.api;
+      const [account] = yield* api.readAccounts(config);
+      expect(account?.usageLimits.unavailable).toBeUndefined();
+      expect(account?.usageLimits.windows.map(({ id, usedPercent }) => [id, usedPercent])).toEqual([
+        ["five_hour", 10],
+        ["seven_day", 50],
+      ]);
+      expect(account?.usageLimits.extraUsage).toEqual({ checkedAt, isEnabled: true, ...expected });
+    }),
+  );
+
   it.effect("pins redemption to the displayed credit and clears only that account's cooldown", () =>
     Effect.gen(function* () {
       const test = fixture();
