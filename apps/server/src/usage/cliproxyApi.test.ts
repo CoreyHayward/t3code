@@ -213,6 +213,66 @@ describe("CLIProxyAPI built-in management API", () => {
     }),
   );
 
+  it.effect("reads Claude credit amounts and their read time without quota windows", () =>
+    Effect.gen(function* () {
+      const checkedAt = "2026-10-15T12:00:00.000Z";
+      yield* TestClock.setTime(Date.parse(checkedAt));
+      const test = fixture({
+        accounts: accounts.map((account) => ({ ...account, provider: "claude" })),
+        upstream: (request) => ({
+          status: 200,
+          body: {
+            extra_usage:
+              request.auth_index === "a"
+                ? {
+                    is_enabled: true,
+                    monthly_limit: 20000,
+                    used_credits: 9967,
+                    utilization: 49.835,
+                    currency: "USD",
+                  }
+                : {
+                    is_enabled: true,
+                    monthly_limit: null,
+                    used_credits: 750,
+                    utilization: null,
+                    currency: "KWD",
+                    decimal_places: 3,
+                  },
+          },
+        }),
+      });
+      const api = yield* test.api;
+      const result = yield* api.readAccounts(config);
+      expect(result.map((account) => account.usageLimits)).toEqual([
+        {
+          checkedAt,
+          windows: [],
+          extraUsage: {
+            checkedAt,
+            isEnabled: true,
+            monthlyLimit: 200,
+            usedCredits: 99.67,
+            utilization: 49.835,
+            currency: "USD",
+          },
+        },
+        {
+          checkedAt,
+          windows: [],
+          extraUsage: {
+            checkedAt,
+            isEnabled: true,
+            monthlyLimit: null,
+            usedCredits: 0.75,
+            utilization: null,
+            currency: "KWD",
+          },
+        },
+      ]);
+    }),
+  );
+
   it.effect("pins redemption to the displayed credit and clears only that account's cooldown", () =>
     Effect.gen(function* () {
       const test = fixture();
