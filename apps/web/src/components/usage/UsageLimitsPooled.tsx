@@ -154,9 +154,8 @@ function ExtraUsageDetails({ extraUsage }: { readonly extraUsage: ServerProvider
       {extraUsage.isEnabled && spent ? (
         <Row label="Spent">
           {spent}
-          {monthlyLimit && monthlyLimit !== "No monthly cap"
-            ? ` of ${monthlyLimit}`
-            : " this month"}
+          {monthlyLimit && monthlyLimit !== "No monthly cap" ? ` of ${monthlyLimit}` : ""} this
+          month
         </Row>
       ) : null}
       {extraUsage.isEnabled && monthlyLimit === "No monthly cap" ? (
